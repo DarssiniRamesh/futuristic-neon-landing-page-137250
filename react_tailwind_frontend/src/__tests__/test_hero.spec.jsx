@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import App from '../App';
 
 jest.mock('react-scroll', () => {
@@ -18,9 +18,12 @@ describe('Hero', () => {
       screen.getByRole('heading', { name: /futuristic interfaces, bold performance\./i })
     ).toBeInTheDocument();
 
-    // CTA buttons act as scroll links
-    const explore = screen.getByRole('button', { name: /explore features/i });
-    const learn = screen.getByRole('button', { name: /learn more/i });
+    // Scope to hero section
+    const homeSection = screen.getByTestId('section-home');
+
+    // CTA buttons act as scroll links within hero
+    const explore = within(homeSection).getByRole('button', { name: /explore features/i });
+    const learn = within(homeSection).getByRole('button', { name: /learn more/i });
     expect(explore).toHaveAttribute('data-to', 'features');
     expect(learn).toHaveAttribute('data-to', 'about');
   });

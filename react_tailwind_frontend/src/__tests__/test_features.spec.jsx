@@ -6,21 +6,28 @@ describe('Features Section', () => {
   test('renders four feature cards with titles and learn more', () => {
     render(<App />);
 
-    // Section heading
-    expect(screen.getByRole('heading', { name: /features/i })).toBeInTheDocument();
+    // Scope within the Features section to avoid ambiguity
+    const featuresSection = screen.getByTestId('section-features');
+    expect(featuresSection).toBeInTheDocument();
+
+    // Section heading inside the features section
+    expect(within(featuresSection).getByRole('heading', { name: /features/i })).toBeInTheDocument();
 
     const titles = [
-      /animated hero/i,
-      /sticky navbar/i,
-      /interactive cards/i,
-      /contact form/i
+      'Animated Hero',
+      'Sticky Navbar',
+      'Interactive Cards',
+      'Contact Form'
     ];
 
-    titles.forEach((t) => {
-      const cardTitle = screen.getByRole('heading', { name: t, level: 3 });
+    titles.forEach((title) => {
+      // Each card has a specific data-testid
+      const cardTestId = `feature-card-${title.toLowerCase().replace(/\\s+/g, '-')}`;
+      const card = within(featuresSection).getByTestId(cardTestId);
+      // Title inside the card
+      const cardTitle = within(card).getByRole('heading', { name: new RegExp(title, 'i'), level: 3 });
       expect(cardTitle).toBeInTheDocument();
-      // Learn more button exists inside same card container (closest parent)
-      const card = cardTitle.closest('div');
+      // Learn more button inside the same card
       const learnMore = within(card).getByRole('button', { name: /learn more/i });
       expect(learnMore).toBeInTheDocument();
     });

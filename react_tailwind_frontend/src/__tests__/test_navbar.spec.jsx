@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import App from '../App';
 
 // Mock react-scroll to control behavior in tests
@@ -25,10 +25,11 @@ describe('Navbar', () => {
     render(<App />);
     const nav = screen.getByRole('navigation', { name: /primary/i });
     expect(nav).toBeInTheDocument();
-    const home = screen.getByRole('button', { name: /home/i });
-    const about = screen.getByRole('button', { name: /about/i });
-    const features = screen.getByRole('button', { name: /features/i });
-    const contact = screen.getByRole('button', { name: /contact/i });
+    const scoped = within(nav);
+    const home = scoped.getByRole('button', { name: /home/i });
+    const about = scoped.getByRole('button', { name: /about/i });
+    const features = scoped.getByRole('button', { name: /features/i });
+    const contact = scoped.getByRole('button', { name: /contact/i });
     expect(home).toHaveAttribute('data-to', 'home');
     expect(about).toHaveAttribute('data-to', 'about');
     expect(features).toHaveAttribute('data-to', 'features');

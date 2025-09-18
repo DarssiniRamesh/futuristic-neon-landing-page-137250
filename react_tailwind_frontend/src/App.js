@@ -46,6 +46,7 @@ function Navbar() {
       )}
       role="navigation"
       aria-label="Primary"
+      data-testid="navbar"
     >
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -93,6 +94,7 @@ function Hero() {
       id="home"
       className="relative min-h-screen flex items-center justify-center hero-animate overflow-hidden"
       aria-label="Home"
+      data-testid="section-home"
     >
       <div
         className="absolute inset-0 opacity-30"
@@ -148,7 +150,7 @@ function Hero() {
  */
 function About() {
   return (
-    <section id="about" className="relative py-24 md:py-28 bg-[var(--bg)]" aria-label="About">
+    <section id="about" className="relative py-24 md:py-28 bg-[var(--bg)]" aria-label="About" data-testid="section-about">
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid md:grid-cols-2 gap-10 items-center">
           <div>
@@ -208,7 +210,7 @@ function About() {
  */
 function FeatureCard({ icon, title, description }) {
   return (
-    <div className="group relative p-6 rounded-2xl bg-[var(--surface)] border border-white/10 overflow-hidden glow-hover">
+    <div className="group relative p-6 rounded-2xl bg-[var(--surface)] border border-white/10 overflow-hidden glow-hover" data-testid={`feature-card-${title.toLowerCase().replace(/\\s+/g, '-')}`}>
       <div
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         style={{
@@ -263,7 +265,7 @@ function Features() {
   );
 
   return (
-    <section id="features" className="relative py-24 md:py-28" aria-label="Features">
+    <section id="features" className="relative py-24 md:py-28" aria-label="Features" data-testid="section-features">
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center">
           <h2 className="font-display text-3xl md:text-4xl font-extrabold">Features</h2>
@@ -311,7 +313,7 @@ function Contact() {
   };
 
   return (
-    <section id="contact" className="relative py-24 md:py-28 bg-[var(--surface)]" aria-label="Contact">
+    <section id="contact" className="relative py-24 md:py-28 bg-[var(--surface)]" aria-label="Contact" data-testid="section-contact">
       <div className="max-w-4xl mx-auto px-6">
         <div className="text-center">
           <h2 className="font-display text-3xl md:text-4xl font-extrabold">Contact</h2>
@@ -374,6 +376,7 @@ function Contact() {
               type="submit"
               className="glow-hover px-6 py-3 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 hover:text-white hover:border-emerald-400 inline-flex items-center gap-2"
               aria-label="Send message"
+              data-testid="contact-submit"
             >
               <i className="fa-solid fa-paper-plane"></i> Send
             </button>
