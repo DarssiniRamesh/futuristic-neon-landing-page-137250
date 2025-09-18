@@ -10,7 +10,8 @@ jest.mock('react-scroll', () => {
     ...Actual,
     __mocks__: { scrollTopMock: scrollTopMockLocal },
     animateScroll: { scrollToTop: scrollTopMockLocal },
-    Link: ({ to, children, className, ...rest }) => (
+    // Strip non-standard props to avoid DOM attribute warnings
+    Link: ({ to, children, className, smooth, duration, offset, ...rest }) => (
       <button data-to={to} className={className} {...rest}>{children}</button>
     ),
   };

@@ -6,7 +6,8 @@ import App from '../App';
 jest.mock('react-scroll', () => {
   const Actual = jest.requireActual('react-scroll');
   // render ScrollLink as a simple button with data-to for assertions
-  const Link = ({ to, children, className, ...rest }) => (
+  // strip non-standard props to prevent unknown DOM attribute warnings
+  const Link = ({ to, children, className, smooth, duration, offset, ...rest }) => (
     <button data-to={to} className={className} {...rest}>{children}</button>
   );
   return {

@@ -3,7 +3,8 @@ import { render, screen } from '@testing-library/react';
 import App from '../App';
 
 jest.mock('react-scroll', () => {
-  const Link = ({ to, children, className, ...rest }) => (
+  // Mock Link that strips non-DOM props to avoid React warnings
+  const Link = ({ to, children, className, smooth, duration, offset, ...rest }) => (
     <button data-to={to} className={className} {...rest}>{children}</button>
   );
   return { Link, animateScroll: { scrollToTop: jest.fn() } };
