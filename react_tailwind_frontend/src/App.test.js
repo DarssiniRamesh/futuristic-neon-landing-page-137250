@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import App from './App';
 
 test('renders main sections and navbar', () => {
@@ -9,5 +9,8 @@ test('renders main sections and navbar', () => {
   expect(screen.getByRole('heading', { name: /futuristic interfaces, bold performance\./i })).toBeInTheDocument();
   // sections headings
   expect(screen.getByRole('heading', { name: /features/i })).toBeInTheDocument();
-  expect(screen.getByRole('heading', { name: /contact/i })).toBeInTheDocument();
+
+  // Scope contact heading within the contact section to avoid ambiguity
+  const contactSection = screen.getByTestId('section-contact');
+  expect(within(contactSection).getByRole('heading', { name: /contact/i })).toBeInTheDocument();
 });
