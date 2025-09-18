@@ -29,7 +29,7 @@ describe('Contact Form', () => {
     const contactSection = screen.getByTestId('section-contact');
     const name = within(contactSection).getByLabelText(/name/i);
     const email = within(contactSection).getByLabelText(/email/i);
-    const message = within(contactSection).getByLabelText(/message/i);
+    const message = within(contactSection).getByRole('textbox', { name: /message/i });
     const submit = within(contactSection).getByTestId('contact-submit');
 
     fireEvent.change(name, { target: { value: 'Jane Doe' } });
