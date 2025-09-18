@@ -323,8 +323,9 @@ function Contact() {
         >
           <div className="grid md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-sm mb-1 text-white/80">Name</label>
+              <label htmlFor="contact-name" className="block text-sm mb-1 text-white/80">Name</label>
               <input
+                id="contact-name"
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 className={cx(
@@ -337,8 +338,9 @@ function Contact() {
               {errors.name && <p className="text-sm text-red-400 mt-1">{errors.name}</p>}
             </div>
             <div>
-              <label className="block text-sm mb-1 text-white/80">Email</label>
+              <label htmlFor="contact-email" className="block text-sm mb-1 text-white/80">Email</label>
               <input
+                id="contact-email"
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
@@ -353,8 +355,9 @@ function Contact() {
             </div>
           </div>
           <div>
-            <label className="block text-sm mb-1 text-white/80">Message</label>
+            <label htmlFor="contact-message" className="block text-sm mb-1 text-white/80">Message</label>
             <textarea
+              id="contact-message"
               value={form.message}
               onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
               className={cx(

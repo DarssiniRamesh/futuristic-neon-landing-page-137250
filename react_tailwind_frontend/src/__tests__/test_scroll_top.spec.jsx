@@ -2,16 +2,17 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import App from '../App';
 
-// Mock react-scroll animateScroll to observe calls
-const scrollTopMock = jest.fn();
+// Mock react-scroll animateScroll to observe calls without referencing out-of-scope variables
 jest.mock('react-scroll', () => {
   const Actual = jest.requireActual('react-scroll');
-  return { 
-    ...Actual, 
-    animateScroll: { scrollToTop: scrollTopMock },
+  const scrollTopMockLocal = jest.fn();
+  return {
+    ...Actual,
+    __mocks__: { scrollTopMock: scrollTopMockLocal },
+    animateScroll: { scrollToTop: scrollTopMockLocal },
     Link: ({ to, children, className, ...rest }) => (
       <button data-to={to} className={className} {...rest}>{children}</button>
-    )
+    ),
   };
 });
 
@@ -22,6 +23,9 @@ function dispatchScroll(y) {
 
 describe('Scroll To Top Button', () => {
   test('toggles visibility based on scroll position and triggers scrollToTop on click', () => {
+    // obtain the mock from the mocked module
+    const { __mocks__ } = require('react-scroll');
+    const scrollTopMock = __mocks__.scrollTopMock;
     render(<App />);
 
     const btn = screen.getByRole('button', { name: /scroll to top/i });
