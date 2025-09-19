@@ -8,12 +8,23 @@ A creative, responsive React + Tailwind CSS landing page with a futuristic neon 
 - react-scroll
 - Google Fonts (Inter, Orbitron)
 - Font Awesome Icons
+- Supabase (realtime via @supabase/supabase-js)
 
 ## Quick Start
 - npm install
+- Create a .env file (see .env.example) and set:
+  - REACT_APP_SUPABASE_URL
+  - REACT_APP_SUPABASE_KEY
 - npm start
 
 Open http://localhost:3000
+
+## Realtime Demo
+A small floating indicator (bottom-left) shows Supabase realtime connection status and the number of events received. It subscribes to the 'messages' table by default and listens to all row events (INSERT/UPDATE/DELETE).
+
+To test:
+- Ensure your Supabase project has a 'messages' table in 'public' schema.
+- Insert or modify rows; you should see the event counter increase.
 
 ## Sections
 - Home (animated hero)
@@ -25,6 +36,6 @@ Open http://localhost:3000
 Edit tailwind.config.js colors or src/index.css root variables. Typography uses Inter (body) and Orbitron (display).
 
 ## Notes
-- No backend integration
 - Fully responsive
 - Smooth animations and neon accents following the "Neon Cyber" style guide
+- Environment variables must be provided; do not hardcode credentials in code.

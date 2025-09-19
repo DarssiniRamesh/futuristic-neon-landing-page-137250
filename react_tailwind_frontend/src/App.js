@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link as ScrollLink, animateScroll as scroll } from "react-scroll";
 import "./App.css";
+import { useSupabaseRealtime } from "./hooks/useSupabaseRealtime";
 
 /**
  * Neon Cyber theme tokens used across the app
@@ -435,6 +436,34 @@ function ScrollTopBtn() {
 /**
  * The App entry containing all sections
  */
+function RealtimeIndicator() {
+  // Non-blocking demo subscription to 'messages' table
+  const { events, status } = useSupabaseRealtime({ table: "messages", enabled: true });
+
+  // Keep the indicator subtle and outside main layout; avoid affecting tests
+  return (
+    <div
+      aria-label="Supabase realtime status"
+      className="fixed bottom-6 left-6 z-50 text-xs px-3 py-2 rounded-lg border border-white/10 bg-black/40 text-white/70"
+      style={{ pointerEvents: "none" }}
+    >
+      <span className="mr-2">Realtime:</span>
+      <span
+        className={
+          status === "connected"
+            ? "text-emerald-300"
+            : status === "error"
+            ? "text-red-400"
+            : "text-white/70"
+        }
+      >
+        {status}
+      </span>
+      <span className="ml-3">events: {events.length}</span>
+    </div>
+  );
+}
+
 // PUBLIC_INTERFACE
 function App() {
   return (
@@ -448,6 +477,7 @@ function App() {
       </main>
       <Footer />
       <ScrollTopBtn />
+      <RealtimeIndicator />
     </div>
   );
 }
