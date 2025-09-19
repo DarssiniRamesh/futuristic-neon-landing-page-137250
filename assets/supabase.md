@@ -8,8 +8,8 @@ Status
 
 Environment variables
 1) Create react_tailwind_frontend/.env from .env.example:
-   REACT_APP_SUPABASE_URL=https://hawtahapcoolgtgavngc.supabase.co
-   REACT_APP_SUPABASE_KEY=eyJhbGciOiJIUzI1NiIs...
+   REACT_APP_SUPABASE_URL=https://YOUR-PROJECT-REF.supabase.co
+   REACT_APP_SUPABASE_KEY=eyJhbGciOiJIUzI1NiIs...  -- anon key only
 
 2) In Supabase Dashboard > Authentication > URL Configuration
    - Site URL: http://localhost:3000 (dev)
@@ -30,6 +30,8 @@ SQL:
   );
 
 -- Contact form submissions table used by the app
+
+Option A (gen_random_uuid):
 SQL:
   create table if not exists public.contact_submissions (
     id uuid primary key default gen_random_uuid(),
@@ -39,62 +41,85 @@ SQL:
     message text not null
   );
 
+Option B (uuid_generate_v4, if you prefer uuid-ossp):
+SQL:
+  create extension if not exists "uuid-ossp";
+  create table if not exists public.contact_submissions (
+    id uuid primary key default uuid_generate_v4(),
+    created_at timestamptz not null default now(),
+    name text not null,
+    email text not null,
+    message text not null
+  );
+
+Note: The frontend expects columns: id (uuid), created_at (timestamptz), name, email, message.
+
 Realtime
 - Go to Database > Replication > Realtime and ensure the public schema is enabled for Realtime.
 - Ensure tables messages and contact_submissions are included.
 
 Row Level Security (RLS)
-Enable RLS and create permissive read policies for anonymous role (demo only).
-These policies allow anyone with the anon key to read and subscribe to events.
-Use stricter policies in production.
+Enable RLS and create permissive policies for anonymous role (demo only). Use stricter policies in production.
 
 SQL:
   -- Enable RLS
   alter table public.messages enable row level security;
   alter table public.contact_submissions enable row level security;
 
-  -- Allow read for anon role (demo)
-  create policy "Allow anon to read messages"
-    on public.messages
-    for select
-    to anon
-    using (true);
+  -- Allow SELECT (read/subscribe) for anon role (demo)
+  do $$
+  begin
+    if not exists (
+      select 1 from pg_policies
+      where schemaname = 'public' and tablename = 'messages' and policyname = 'Allow anon to read messages'
+    ) then
+      create policy "Allow anon to read messages"
+        on public.messages
+        for select
+        to anon
+        using (true);
+    end if;
 
-  create policy "Allow anon to read contact_submissions"
-    on public.contact_submissions
-    for select
-    to anon
-    using (true);
+    if not exists (
+      select 1 from pg_policies
+      where schemaname = 'public' and tablename = 'contact_submissions' and policyname = 'Allow anon to read contact_submissions'
+    ) then
+      create policy "Allow anon to read contact_submissions"
+        on public.contact_submissions
+        for select
+        to anon
+        using (true);
+    end if;
+  end $$;
 
-  -- Allow realtime replication (required for change broadcasts)
-  create policy "Allow anon to subscribe messages (realtime)"
-    on public.messages
-    for select
-    to anon
-    using (true);
-
-  create policy "Allow anon to subscribe contact_submissions (realtime)"
-    on public.contact_submissions
-    for select
-    to anon
-    using (true);
-
-Optional insert policy (for public demo inserts from client — use carefully):
-  -- create policy "Allow anon to insert messages"
-  --   on public.messages
-  --   for insert
-  --   to anon
-  --   with check (true);
-
-  -- create policy "Allow anon to insert contact_submissions"
-  --   on public.contact_submissions
-  --   for insert
-  --   to anon
-  --   with check (true);
+  -- Allow INSERT for anon (demo only; consider rate limits/captcha)
+  do $$
+  begin
+    if not exists (
+      select 1 from pg_policies
+      where schemaname = 'public' and tablename = 'contact_submissions' and policyname = 'Allow anon to insert contact_submissions'
+    ) then
+      create policy "Allow anon to insert contact_submissions"
+        on public.contact_submissions
+        for insert
+        to anon
+        with check (true);
+    end if;
+  end $$;
 
 Notes:
-- If you enable insert for anon, also consider limiting rate or adding captcha on the client.
-- In production, use authenticated users and restrict who can insert/read submissions.
+- If you enable anon insert, consider adding captcha on client or rate limiting.
+- In production, restrict to authenticated users and limit who can read/insert submissions.
+
+How to apply via Supabase UI
+1) Open Supabase Dashboard > SQL Editor.
+2) Paste the SQL from Option A (or B) plus the RLS blocks and run it.
+3) Go to Database > Replication > Realtime and:
+   - Ensure the public schema is enabled.
+   - Ensure both messages and contact_submissions tables are checked.
+4) Test with:
+   insert into public.messages(content, author) values ('Hello world', 'demo');
+   insert into public.contact_submissions(name, email, message) values ('Jane', 'jane@example.com', 'Hello from demo!');
 
 Frontend usage
 - The app shows a small Realtime indicator (bottom-left) connected to public.messages.
@@ -102,8 +127,8 @@ Frontend usage
 
 Troubleshooting
 - If no events are received:
-  1) Verify .env is set and the app restarted (env changes require restart).
-  2) Confirm Realtime is enabled for the public schema and both tables.
+  1) Verify .env is set (REACT_APP_SUPABASE_URL, REACT_APP_SUPABASE_KEY) and the app restarted.
+  2) Confirm Realtime is enabled for public schema and both tables are included.
   3) Confirm RLS policies above are created and RLS is enabled on both tables.
   4) Insert a row to test:
      insert into public.messages(content, author) values ('Hello world', 'demo');
