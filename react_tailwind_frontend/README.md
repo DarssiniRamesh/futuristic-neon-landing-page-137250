@@ -19,6 +19,11 @@ A creative, responsive React + Tailwind CSS landing page with a futuristic neon 
 
 Open http://localhost:3000
 
+## Supabase Setup (Demo)
+1) Copy .env.example to .env and fill in your REACT_APP_SUPABASE_URL and REACT_APP_SUPABASE_KEY.
+2) In Supabase SQL editor, create the demo table and RLS (see assets/supabase.md for copy/paste SQL).
+3) Enable Realtime for the public schema and messages table (Database > Replication > Realtime).
+
 ## Realtime Demo
 A small floating indicator (bottom-left) shows Supabase realtime connection status and the number of events received. It subscribes to the 'messages' table by default and listens to all row events (INSERT/UPDATE/DELETE).
 
@@ -39,3 +44,4 @@ Edit tailwind.config.js colors or src/index.css root variables. Typography uses 
 - Fully responsive
 - Smooth animations and neon accents following the "Neon Cyber" style guide
 - Environment variables must be provided; do not hardcode credentials in code.
+- See assets/supabase.md for full Supabase configuration details and SQL.
