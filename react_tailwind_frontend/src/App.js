@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link as ScrollLink, animateScroll as scroll } from "react-scroll";
 import "./App.css";
 import { useSupabaseRealtime } from "./hooks/useSupabaseRealtime";
+import { getSupabaseClient } from "./lib/supabaseClient";
 
 /**
  * Neon Cyber theme tokens used across the app
@@ -291,6 +292,25 @@ function Contact() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState({});
   const [sent, setSent] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [submissions, setSubmissions] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Use existing realtime hook to listen to new inserts on contact_submissions
+  const { events } = useSupabaseRealtime({
+    table: "contact_submissions",
+    enabled: true,
+  });
+
+  // Accumulate new INSERT events into demo list
+  useEffect(() => {
+    const newInserts = events
+      .filter((e) => e.type === "INSERT")
+      .map((e) => e.payload.new);
+    if (newInserts.length) {
+      setSubmissions((prev) => [...newInserts, ...prev].slice(0, 20));
+    }
+  }, [events]);
 
   const validate = () => {
     const errs = {};
@@ -302,14 +322,41 @@ function Contact() {
   };
 
   // PUBLIC_INTERFACE
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validate()) {
+    setSubmitError(null);
+    if (!validate()) return;
+
+    setLoading(true);
+    try {
+      const supabase = getSupabaseClient();
+      // Insert new row into contact_submissions
+      const { error } = await supabase
+        .from("contact_submissions")
+        .insert([
+          {
+            name: form.name.trim(),
+            email: form.email.trim(),
+            message: form.message.trim(),
+          },
+        ]);
+
+      if (error) {
+        setSubmitError(error.message || "Failed to submit. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      // Success UI: show tick and clear fields after a moment
       setSent(true);
+      setLoading(false);
       setTimeout(() => {
         setSent(false);
         setForm({ name: "", email: "", message: "" });
       }, 2000);
+    } catch (err) {
+      setSubmitError(err.message || "Unexpected error. Please try again.");
+      setLoading(false);
     }
   };
 
@@ -372,14 +419,27 @@ function Contact() {
             />
             {errors.message && <p className="text-sm text-red-400 mt-1">{errors.message}</p>}
           </div>
+          {submitError && (
+            <div className="px-4 py-3 rounded-lg border border-red-500/40 bg-red-500/10 text-red-300">
+              <i className="fa-solid fa-triangle-exclamation mr-2"></i>
+              {submitError}
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <button
               type="submit"
-              className="glow-hover px-6 py-3 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 hover:text-white hover:border-emerald-400 inline-flex items-center gap-2"
+              className={cx(
+                "glow-hover px-6 py-3 rounded-xl inline-flex items-center gap-2",
+                "border",
+                loading
+                  ? "bg-white/10 text-white/70 border-white/20 cursor-not-allowed"
+                  : "bg-emerald-500/20 text-emerald-300 border-emerald-400/40 hover:text-white hover:border-emerald-400"
+              )}
               aria-label="Send message"
               data-testid="contact-submit"
+              disabled={loading}
             >
-              <i className="fa-solid fa-paper-plane"></i> Send
+              <i className="fa-solid fa-paper-plane"></i> {loading ? "Sending..." : "Send"}
             </button>
             {sent && (
               <span className="text-emerald-300 flex items-center gap-2">
@@ -388,6 +448,35 @@ function Contact() {
             )}
           </div>
         </form>
+
+        {/* Demo: Live submissions list */}
+        <div className="mt-8">
+          <div className="flex items-center gap-2 mb-3">
+            <i className="fa-solid fa-wave-square text-emerald-300"></i>
+            <h3 className="font-semibold">Live submissions</h3>
+            <span className="text-white/50 text-sm">({submissions.length})</span>
+          </div>
+          <ul className="space-y-3">
+            {submissions.length === 0 && (
+              <li className="text-white/50 text-sm">New submissions will appear here in realtime.</li>
+            )}
+            {submissions.map((s) => (
+              <li
+                key={s.id || `${s.email}-${s.created_at || Math.random()}`}
+                className="p-4 rounded-xl bg-black/20 border border-white/10"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="font-semibold text-emerald-300">{s.name}</div>
+                  <div className="text-white/50 text-xs">
+                    {s.created_at ? new Date(s.created_at).toLocaleString() : ""}
+                  </div>
+                </div>
+                <div className="text-white/70 text-sm">{s.email}</div>
+                <p className="mt-1 text-white/80">{s.message}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
   );
